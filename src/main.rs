@@ -1,3 +1,5 @@
+extern crate core;
+
 use rocket::{get, http, routes};
 
 #[get("/")]
@@ -10,13 +12,31 @@ fn error() -> http::Status {
     http::Status::InternalServerError
 }
 
+#[get("/<num..>")]
+fn xor(num: std::path::PathBuf) -> Result<String, http::Status> {
+    let args = num.iter()
+        .map(|arg| arg.to_str().unwrap().parse::<u32>())
+        .collect::<Result<Vec<u32>, _>>();
 
-#[get("/<num1>/<num2>")]
-fn xor(num1: u16, num2: u16) -> String {
-    let xor = num1 ^ num2;
-    let result: usize = xor.pow(3) as usize;
-    format!("{}", result)
+
+    match args {
+        Ok(args) => {
+            if args.len() > 20 {
+                Err(http::Status::BadRequest)
+            } else {
+                let result =
+                    args.iter()
+                        .fold(0, |acc, current| acc ^ current)
+                        .pow(3) as usize;
+                Ok(format!("{}", result))
+            }
+        },
+        Err(_) => {
+            Err(http::Status::NotAcceptable)
+        }
+    }
 }
+
 
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {

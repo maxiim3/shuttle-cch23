@@ -32,7 +32,9 @@ fn xor(num: PathBuf) -> Result<String, http::Status> {
 
     match args {
         Ok(args) => {
-            if args.len() > 20 && args.len() > 1 {
+            println!("args : {:?}, length : {:?}", args, args.len());
+            if args.len() > 20 || args.len() == 0 {
+                println!("args.len() > 20 && args.len() == 0");
                 Err(http::Status::BadRequest)
             } else {
                 let result = args
